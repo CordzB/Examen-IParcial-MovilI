@@ -1,10 +1,27 @@
 import React from 'react';
-import { Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, FlatList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBank } from '../context/BankContext';
 
 export default function HomeScreen() {
   const { balance, transactions, depositFixed500, withdrawFixed200 } = useBank();
+
+  const renderTx = ({ item }) => {
+    let text;
+    if (item.type === 'DEPOSITO') {
+      text = `Depósito L.${item.amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+    } else if (item.type === 'RETIRO') {
+      text = `Retiro L.${item.amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+    } else {
+      text = `Transferencia a ${item.toName} (${item.toAccount}) L.${item.amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+    }
+
+    return (
+      <View style={styles.txPill}>
+        <Text style={styles.txPillText}>{text}</Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -25,16 +42,9 @@ export default function HomeScreen() {
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
+        renderItem={renderTx}
         ListEmptyComponent={<Text style={styles.empty}>Sin transacciones aún.</Text>}
         contentContainerStyle={{ paddingBottom: 20 }}
-        renderItem={({ item }) => (
-          <SafeAreaView style={styles.txPill}>
-            <Text style={styles.txPillText}>
-              {item.type === 'DEPOSITO' ? 'Depósito' : item.type === 'RETIRO' ? 'Retiro' : 'Transferencia'}{' '}
-              L.{item.amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}
-            </Text>
-          </SafeAreaView>
-        )}
       />
     </SafeAreaView>
   );

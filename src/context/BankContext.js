@@ -5,7 +5,8 @@ const INITIAL_BALANCE = 10000;
 
 const initialState = {
   balance: INITIAL_BALANCE,
-  transactions: [], 
+
+  transactions: [],
 };
 
 function uid() {
@@ -41,7 +42,9 @@ function bankReducer(state, action) {
         id: uid(),
         type: 'TRANSFERENCIA',
         amount: action.amount,
-        note: action.note ?? `Transferencia de L.${action.amount}`,
+        toAccount: action.toAccount,
+        toName: action.toName,
+        note: `Transferencia a ${action.toName} (${action.toAccount}) por L.${action.amount}`,
         date: new Date().toISOString(),
       };
       return { balance: state.balance - action.amount, transactions: [tx, ...state.transactions] };
@@ -68,12 +71,24 @@ export function BankProvider({ children }) {
 
   const transfer = (amount, toAccount, toName) => {
     const num = Number(String(amount).replace(',', '.'));
-    if (!toAccount?.trim() || !toName?.trim()) return Alert.alert('Datos incompletos', 'Ingresa cuenta y nombre del destinatario.');
-    if (Number.isNaN(num) || num <= 0) return Alert.alert('Monto inválido', 'Ingresa un monto mayor a 0.');
-    if (num > state.balance) return Alert.alert('Saldo insuficiente', 'No cuenta con el saldo para completar la transacción.');
+    if (!toAccount?.trim() || !toName?.trim()) {
+      return Alert.alert('Datos incompletos', 'Ingresa cuenta y nombre del destinatario.');
+    }
+    if (Number.isNaN(num) || num <= 0) {
+      return Alert.alert('Monto inválido', 'Ingresa un monto mayor a 0.');
+    }
+    if (num > state.balance) {
+      return Alert.alert('Saldo insuficiente', 'No cuenta con el saldo para completar la transacción.');
+    }
 
-    dispatch({ type: 'TRANSFERENCIA', amount: num, note: `Transferencia a ${toName} (${toAccount}) por L.${num}` });
-    Alert.alert('Transferencia exitosa', `Se transfirieron L.${num} a ${toName}.`);
+    dispatch({
+      type: 'TRANSFERENCIA',
+      amount: num,
+      toAccount,
+      toName,
+    });
+
+    Alert.alert('Transferencia exitosa', `Se transfirieron L.${num} a ${toName} (${toAccount}).`);
   };
 
   const value = useMemo(() => ({

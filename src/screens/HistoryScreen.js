@@ -6,6 +6,23 @@ import { useBank } from '../context/BankContext';
 export default function HistoryScreen() {
   const { transactions } = useBank();
 
+  const renderTx = ({ item }) => {
+    let text;
+    if (item.type === 'DEPOSITO') {
+      text = `Depósito L.${item.amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+    } else if (item.type === 'RETIRO') {
+      text = `Retiro L.${item.amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+    } else {
+      text = `Transferencia a ${item.toName} (${item.toAccount}) L.${item.amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}`;
+    }
+
+    return (
+      <View style={styles.pill}>
+        <Text style={styles.pillText}>{text}</Text>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Text style={styles.title}>Mi Banco APP</Text>
@@ -13,16 +30,9 @@ export default function HistoryScreen() {
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
+        renderItem={renderTx}
         ListEmptyComponent={<Text style={styles.empty}>Sin transacciones aún.</Text>}
         contentContainerStyle={{ paddingBottom: 20 }}
-        renderItem={({ item }) => (
-          <View style={styles.pill}>
-            <Text style={styles.pillText}>
-              {item.type === 'DEPOSITO' ? 'Depósito' : item.type === 'RETIRO' ? 'Retiro' : 'Transferencia'}{' '}
-              L.{item.amount.toLocaleString('es-HN', { minimumFractionDigits: 2 })}
-            </Text>
-          </View>
-        )}
       />
     </SafeAreaView>
   );
